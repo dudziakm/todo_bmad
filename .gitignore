@@ -1,0 +1,22 @@
+node_modules/
+dist/
+data/
+*.db
+
+# Test output
+coverage/
+playwright-report/
+test-results/
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local

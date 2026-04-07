@@ -1,97 +1,143 @@
 # Todo App — BMAD Method
 
-A full-stack Todo application built using the [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) — a spec-driven, agent-powered development framework that guides projects from PRD through implementation with structured AI-assisted workflows.
+A full-stack Todo application built using the [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) — a spec-driven, agent-powered development framework.
 
-## Overview
+## Features
 
-A simple, clean Todo app focused on core task management: create, view, complete, and delete tasks. Built with quality integrated from day one — not bolted on at the end.
+| Feature             | Description                                           |
+|---------------------|-------------------------------------------------------|
+| CRUD operations     | Create, read, toggle, and delete todos                |
+| Persistent storage  | SQLite — data survives refreshes and restarts         |
+| Responsive UI       | Works from 375px mobile to 1920px desktop             |
+| Visual status       | Completed tasks shown with strikethrough + muted text |
+| Error handling      | Optimistic UI with rollback, error banners            |
+| Dockerized          | Full stack runs via `docker compose up`               |
+| Accessible          | WCAG AA compliant, keyboard navigable, ARIA labels    |
 
-| Feature             | Description                                               |
-|---------------------|-----------------------------------------------------------|
-| CRUD operations     | Create, read, update, delete todos                        |
-| Persistent storage  | Data survives refreshes and sessions                      |
-| Responsive UI       | Works across desktop and mobile                           |
-| Visual status       | Completed tasks visually distinct from active ones        |
-| Error handling      | Graceful failures on both client and server               |
-| Dockerized          | Full stack runs via `docker-compose up`                   |
+## Tech Stack
 
-## Project Structure
+| Layer      | Technology                |
+|------------|---------------------------|
+| Frontend   | React 19, Vite 6          |
+| Backend    | Express 5, Node 22        |
+| Database   | SQLite (better-sqlite3)   |
+| Testing    | Vitest, Playwright        |
+| Container  | Docker, Docker Compose    |
+| Package Mgr| pnpm (workspace)          |
 
-```
-todo_bmad/
-├── _bmad/                  # BMAD framework configuration
-│   ├── _config/            #   Agent and skill manifests
-│   ├── bmm/                #   BMAD Method Modules (core skills)
-│   ├── core/               #   Core modules (analysis, planning, solutioning, implementation)
-│   └── tea/                #   Test Engineering Architecture (TEA) module
-├── _bmad-output/           # Generated BMAD artifacts
-│   ├── planning-artifacts/ #   Architecture docs, briefs, stories
-│   ├── implementation-artifacts/
-│   └── test-artifacts/
-├── .cursor/skills/         # Cursor IDE BMAD skill integrations
-├── .claude/skills/         # Claude Code BMAD skill integrations
-├── .github/skills/         # GitHub Copilot BMAD skill integrations
-├── docs/                   # Project documentation
-├── PRD.md                  # Product Requirement Document
-└── APP_IDEA.md             # Implementation guide and deliverables
-```
-
-## BMAD Workflow
-
-The project follows a four-step spec-driven process:
-
-1. **Specifications** — PM persona refines the PRD, Architect defines technical design, stories with acceptance criteria are created
-2. **Implementation** — Backend API, frontend UI, and tests built in parallel following BMAD specs
-3. **Containerization** — Dockerfiles with multi-stage builds, Docker Compose orchestration, health checks
-4. **Quality Assurance** — Coverage analysis, performance testing, accessibility audits (WCAG AA), security review
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 22 LTS
-- Docker & Docker Compose
-- An IDE with BMAD skills support (Cursor, VS Code with Claude Code, or GitHub Copilot)
+## Quick Start
 
 ### Development
 
 ```bash
-# Clone the repository
-git clone git@github.com:dudziakm/todo_bmad.git
-cd todo_bmad
+# Install dependencies
+pnpm install
 
-# TODO: Install dependencies (once implementation begins)
-npm install
+# Start both frontend and backend
+pnpm dev
 
-# TODO: Start development server
-npm run dev
+# Frontend: http://localhost:5173
+# Backend:  http://localhost:3000
 ```
 
 ### Docker
 
 ```bash
-# Run the full stack
-docker-compose up
+# Build and run
+docker compose up --build
 
-# Run with rebuild
-docker-compose up --build
+# App available at http://localhost:8080
+# API available at http://localhost:3000
 ```
 
-## Success Criteria
+### Testing
 
-| Criterion           | Target                                             |
-|---------------------|----------------------------------------------------|
-| Working Application | All CRUD operations functional                     |
-| Test Coverage       | Minimum 70% meaningful coverage                    |
-| E2E Tests           | Minimum 5 passing Playwright tests                 |
-| Docker Deployment   | Runs successfully via `docker-compose up`          |
-| Accessibility       | Zero critical WCAG violations                      |
+```bash
+# Unit + integration tests
+pnpm test
 
-## Documentation
+# Test coverage
+pnpm test:coverage
 
-- [PRD.md](PRD.md) — Product Requirement Document
-- [APP_IDEA.md](APP_IDEA.md) — Implementation guide, deliverables, and methodology
+# E2E tests (requires dev servers running)
+pnpm dev  # in one terminal
+node e2e/run-e2e.js  # in another terminal
+```
+
+## Project Structure
+
+```
+todo_bmad/
+├── backend/                  # Express API
+│   ├── src/
+│   │   ├── index.js          #   Entry point
+│   │   ├── app.js            #   Express app factory
+│   │   ├── routes/todos.js   #   CRUD endpoints
+│   │   ├── db/database.js    #   SQLite schema & connection
+│   │   └── middleware/errors.js
+│   ├── tests/                #   Integration tests (22 tests)
+│   └── Dockerfile
+├── frontend/                 # React SPA
+│   ├── src/
+│   │   ├── App.jsx           #   Root component
+│   │   ├── components/       #   TodoForm, TodoItem, TodoList, etc.
+│   │   ├── hooks/useTodos.js #   State management hook
+│   │   ├── api/todos.js      #   API client
+│   │   └── styles/app.css
+│   ├── tests/                #   Component + hook tests (47 tests)
+│   ├── nginx.conf            #   Production reverse proxy
+│   └── Dockerfile
+├── e2e/                      # End-to-end tests
+│   ├── tests/todo-app.spec.js  # Playwright test specs (10 tests)
+│   ├── run-e2e.js            #   Standalone Playwright runner
+│   └── playwright.config.js
+├── _bmad-output/             # BMAD artifacts
+│   ├── planning-artifacts/   #   Brief, architecture, stories
+│   └── test-artifacts/       #   Coverage, security, accessibility
+├── docs/                     # Documentation
+│   └── ai-integration-log.md
+├── docker-compose.yml
+├── PRD.md
+└── APP_IDEA.md
+```
+
+## API
+
+| Method   | Endpoint          | Description          |
+|----------|-------------------|----------------------|
+| `GET`    | `/api/todos`      | List all todos       |
+| `POST`   | `/api/todos`      | Create a todo        |
+| `PATCH`  | `/api/todos/:id`  | Update a todo        |
+| `DELETE` | `/api/todos/:id`  | Delete a todo        |
+| `GET`    | `/api/health`     | Health check         |
+
+## Test Results
+
+| Suite              | Tests | Coverage (Stmts) |
+|--------------------|-------|-------------------|
+| Backend (Vitest)   | 22    | 92%               |
+| Frontend (Vitest)  | 47    | 98%               |
+| E2E (Playwright)   | 10    | —                 |
+| **Total**          | **79**|                   |
+
+## BMAD Artifacts
+
+| Artifact                                                          | Persona              |
+|-------------------------------------------------------------------|----------------------|
+| [Product Brief](_bmad-output/planning-artifacts/product-brief.md) | PM (John)            |
+| [Architecture](_bmad-output/planning-artifacts/architecture.md)   | Architect (Winston)  |
+| [Epics & Stories](_bmad-output/planning-artifacts/epics-and-stories.md) | SM (Bob)       |
+| [Test Strategy](_bmad-output/planning-artifacts/test-strategy.md) | QA (Murat)           |
+| [Coverage Report](_bmad-output/test-artifacts/coverage-report.md) | QA (Quinn)           |
+| [Security Review](_bmad-output/test-artifacts/security-review.md) | QA (Quinn)           |
+| [Accessibility Audit](_bmad-output/test-artifacts/accessibility-audit.md) | QA (Murat)   |
+| [AI Integration Log](docs/ai-integration-log.md)                 | —                    |
 
 ## BMAD Method
 
-This project uses the [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) — a structured, agent-driven development framework with persona-based workflows (PM, Architect, Developer, QA, DevOps) that ensures comprehensive coverage from requirements through deployment.
+This project follows a four-step spec-driven process:
+
+1. **Specifications** — PM refines PRD, Architect defines technical design, stories with acceptance criteria
+2. **Implementation** — Backend API, frontend UI, tests built following specs
+3. **Containerization** — Dockerfiles with multi-stage builds, Docker Compose orchestration
+4. **Quality Assurance** — Coverage analysis, accessibility audits, security review
