@@ -1,5 +1,7 @@
 FROM node:22-alpine AS deps
 
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
