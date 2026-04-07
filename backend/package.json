@@ -10,6 +10,9 @@
     "test:coverage": "vitest run --coverage",
     "lint": "oxlint src/ tests/"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3"]
+  },
   "dependencies": {
     "better-sqlite3": "12.8.0",
     "cors": "2.8.5",
