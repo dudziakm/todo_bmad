@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
+    "build": "pnpm --filter frontend build",
+    "test": "pnpm --filter backend test && pnpm --filter frontend test",
+    "test:coverage": "pnpm --filter backend test:coverage && pnpm --filter frontend test:coverage",
+    "test:e2e": "pnpm --filter e2e test",
+    "lint": "pnpm --filter backend lint && pnpm --filter frontend lint"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3", "esbuild"]
+  },
+  "devDependencies": {
+    "concurrently": "9.2.0"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "oxlint src/ tests/"
+  },
+  "dependencies": {
+    "better-sqlite3": "12.8.0",
+    "cors": "2.8.5",
+    "express": "5.1.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.1.3",
+    "supertest": "7.2.2",
+    "vitest": "4.1.3"
+  }
+}

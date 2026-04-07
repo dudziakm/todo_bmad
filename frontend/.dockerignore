@@ -1,0 +1,6 @@
+node_modules
+dist
+tests
+vitest.config.js
+*.test.jsx
+*.test.js
