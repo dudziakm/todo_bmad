@@ -1,0 +1,157 @@
+name: verify
+
+# Lekka bramka dla aktualizacji zaleznosci: instalacja, typecheck i build.
+# Swiadomie NIE uruchamia E2E. Zestawy Playwrighta i Cypressa w tych repo
+# celuja w zewnetrzne serwisy, ktore znikaja, przekierowuja albo blokuja ruch
+# z centrow danych — jako bramka daja szum, nie dowod. Tu chodzi o sygnal,
+# ktory jest zielony wtedy i tylko wtedy, gdy podbicie wersji niczego nie zepsulo.
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      dirs: ${{ steps.find.outputs.dirs }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: find
+        name: Znajdz katalogi projektow
+        run: |
+          set -euo pipefail
+          if [ -f package.json ]; then
+            dirs='["."]'
+          else
+            dirs=$(find . -maxdepth 4 -name package.json \
+                     -not -path '*/node_modules/*' \
+                     -not -path '*/.next/*' \
+                     -not -path '*/dist/*' \
+                     -not -path '*/build/*' \
+                     -printf '%h\n' | sort -u | jq -R . | jq -sc .)
+          fi
+          echo "dirs=$dirs" >> "$GITHUB_OUTPUT"
+          echo "Katalogi do sprawdzenia: $dirs"
+
+  verify:
+    needs: discover
+    if: needs.discover.outputs.dirs != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: ${{ fromJSON(needs.discover.outputs.dirs) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: pm
+        name: Wykryj menedzera pakietow
+        run: |
+          set -euo pipefail
+          if   [ -f pnpm-lock.yaml ]; then mgr=pnpm
+          elif [ -f yarn.lock ];      then mgr=yarn
+          else                             mgr=npm
+          fi
+          echo "mgr=$mgr" >> "$GITHUB_OUTPUT"
+          echo "Menedzer: $mgr"
+
+      - uses: pnpm/action-setup@v4
+        if: steps.pm.outputs.mgr == 'pnpm'
+        with:
+          version: 10
+
+      # Bez 'cache:' celowo — setup-node przerywa twardo, gdy nie znajdzie
+      # lockfile'a, a czesc repo go nie ma. Bramka ma byc odporna, nie szybka.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Instalacja
+        run: |
+          set -euo pipefail
+          case "${{ steps.pm.outputs.mgr }}" in
+            pnpm) pnpm install --frozen-lockfile ;;
+            yarn) yarn install --immutable ;;
+            npm)
+              if [ -f package-lock.json ]; then
+                npm ci
+              else
+                echo "Brak package-lock.json — instaluje bez zamrozenia."
+                npm install --no-audit --no-fund
+              fi
+              ;;
+          esac
+
+      - name: Typecheck
+        run: |
+          set -euo pipefail
+          if [ ! -f tsconfig.json ]; then
+            echo "Brak tsconfig.json — pomijam."; exit 0
+          fi
+          if ! node -e "const p=require('./package.json');const d={...p.dependencies,...p.devDependencies};process.exit(d.typescript?0:1)"; then
+            echo "typescript nie jest zalezoscia repo — pomijam, zeby nie sciagac losowej wersji."; exit 0
+          fi
+          npx --no-install tsc --noEmit
+
+      - name: Build
+        run: |
+          set -euo pipefail
+          if ! node -e "const p=require('./package.json');process.exit(p.scripts&&p.scripts.build?0:1)"; then
+            echo "Brak skryptu build — pomijam."; exit 0
+          fi
+          case "${{ steps.pm.outputs.mgr }}" in
+            pnpm) pnpm run build ;;
+            yarn) yarn run build ;;
+            npm)  npm run build ;;
+          esac
+
+      # Bramka, ktora po cichu pomija typecheck i build, swieci na zielono po samej
+      # instalacji. To wciaz realny sygnal (zla wersja, rozjechany lockfile, konflikt
+      # peer albo override), ale duzo slabszy niz sie wydaje. Wypisujemy wprost, co
+      # faktycznie zostalo sprawdzone, zeby nikt nie budowal na tym falszywej pewnosci.
+      - name: Co ta bramka faktycznie sprawdzila
+        if: always()
+        run: |
+          set -euo pipefail
+          ts=nie
+          if [ -f tsconfig.json ] && node -e "const p=require('./package.json');const d={...p.dependencies,...p.devDependencies};process.exit(d.typescript?0:1)"; then
+            ts=tak
+          fi
+          bd=nie
+          if node -e "const p=require('./package.json');process.exit(p.scripts&&p.scripts.build?0:1)"; then
+            bd=tak
+          fi
+          {
+            echo "### Bramka verify — \`${{ matrix.dir }}\`"
+            echo ""
+            echo "| Etap | Uruchomiony |"
+            echo "|---|---|"
+            echo "| instalacja zaleznosci | tak |"
+            echo "| typecheck (\`tsc --noEmit\`) | $ts |"
+            echo "| build | $bd |"
+            if [ "$ts" = nie ] && [ "$bd" = nie ]; then
+              echo ""
+              echo "> **Uwaga:** w tym katalogu bramka sprawdza wylacznie instalacje."
+              echo "> Nie traktuj zielonego wyniku jako dowodu, ze aktualizacja niczego nie zepsula."
+            fi
+            if [ "$ts" = tak ]; then
+              echo ""
+              echo "> \`tsc --noEmit\` przy \`skipLibCheck: true\` (typowe ustawienie) nie wykrywa"
+              echo "> wiekszosci regresji w typach samych zaleznosci — tylko te, ktore wychodza"
+              echo "> na powierzchni w kodzie repo."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
