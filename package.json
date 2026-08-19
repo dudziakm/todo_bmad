@@ -19,7 +19,7 @@
     ]
   },
   "devDependencies": {
-    "concurrently": "9.2.0"
+    "concurrently": "9.2.4"
   },
   "overrides": {
     "nanoid": "3.3.18",
