@@ -23,6 +23,6 @@
     "@vitest/coverage-v8": "4.1.11",
     "jsdom": "26.1.0",
     "vite": "6.4.3",
-    "vitest": "4.1.3"
+    "vitest": "4.1.11"
   }
 }
