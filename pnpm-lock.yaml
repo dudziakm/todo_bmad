@@ -41,8 +41,8 @@ importers:
         specifier: 4.1.11
         version: 4.1.11(vitest@4.1.11)
       supertest:
-        specifier: 7.3.0
-        version: 7.3.0(supports-color@8.1.1)
+        specifier: 7.3.1
+        version: 7.3.1(supports-color@8.1.1)
       vitest:
         specifier: 4.1.11
         version: 4.1.11(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0(supports-color@8.1.1))(vite@6.4.3)
@@ -1447,8 +1447,8 @@ packages:
     resolution: {integrity: sha512-PVMkMrhKrSTtFhUU8jiWuGh/gyRMKiyCTCmm0+qVzRNxlfntmRKJkDhlEXN62x3HIb33sQ4kmL8lcSdccWAchQ==}
     engines: {node: '>=14.18.0'}
 
-  supertest@7.3.0:
-    resolution: {integrity: sha512-UwwmWq3xLhyU96c521wYNaBg7IqX78Wpj4FKs6Katp6vdklX42zU5ESvX3KeZRLFyO44RwFp4yvxYMNZzCcX9g==}
+  supertest@7.3.1:
+    resolution: {integrity: sha512-vNaNCFoCR/edDbErQZp5KLNT8R4dSPHX7rlDLoE8hWLAm/878j6ShMbe8HK/E6RwwuhlSXVelXAIg9AxR5WWPw==}
     engines: {node: '>=14.18.0'}
 
   supports-color@7.2.0:
@@ -3006,7 +3006,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  supertest@7.3.0(supports-color@8.1.1):
+  supertest@7.3.1(supports-color@8.1.1):
     dependencies:
       cookie-signature: 1.2.2
       methods: 1.1.2
